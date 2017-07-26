@@ -16,19 +16,19 @@ type {{.InterfaceName}}Opts struct {
 {{- end }}
 }
 
-type {{.InterfaceName}}Mock struct {
+type Mock{{.InterfaceName}} struct {
 {{- range .Methods }}
 	Mock{{.Name}} func({{ .Arglist }}) {{.ReturnArglist}}
 {{- end }}
 }
 {{ range .Methods }}
-func (mock *{{$obj.InterfaceName}}Mock) {{.Name}}({{.Arglist}}) {{.ReturnArglist}} {
+func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}({{.Arglist}}) {{.ReturnArglist}} {
 	return mock.Mock{{.Name}}({{ .ArgCallList }})
 }
 {{ end -}}
 
-func New{{.InterfaceName}}Mock(opts {{.InterfaceName}}Opts) *{{.InterfaceName}} {
-	mock := new({{.InterfaceName}}Mock)
+func NewMock{{.InterfaceName}}(opts {{.InterfaceName}}Opts) *Mock{{.InterfaceName}} {
+	mock := new(Mock{{.InterfaceName}})
 
 	{{- range .Methods }}
 		mock.Mock{{.Name}} = func({{ .Arglist }}) {{.ReturnArglist}} {
