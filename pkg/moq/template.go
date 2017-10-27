@@ -6,7 +6,6 @@ var moqImports = []string{"sync"}
 // moqTemplate is the template for mocked code.
 var moqTemplate = `package {{.PackageName}}
 
-// Mocks automatically generated with Moq :)
 {{ range $i, $obj := .Objects -}}
 const {{.InterfaceName}}ErrorMessage = "{{.InterfaceName}}-error"
 
