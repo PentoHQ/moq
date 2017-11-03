@@ -97,6 +97,7 @@ func (m *Mocker) Mock(w io.Writer, name ...string) error {
 				meth := iiface.Method(i)
 				sig := meth.Type().(*types.Signature)
 				method := &method{
+					Obj:  &obj,
 					Name: meth.Name(),
 				}
 				obj.Methods = append(obj.Methods, method)
@@ -163,8 +164,10 @@ type obj struct {
 	InterfaceName string
 	Methods       []*method
 }
+
 type method struct {
 	Name    string
+	Obj     *obj
 	Params  []*param
 	Returns []*param
 }
@@ -194,6 +197,37 @@ func (m *method) ReturnArglist() string {
 		return fmt.Sprintf("(%s)", strings.Join(params, ", "))
 	}
 	return strings.Join(params, ", ")
+}
+
+func (m *method) ReturnValuelist(allNil bool) string {
+	values := make([]string, len(m.Returns))
+	for i, p := range m.Returns {
+		if p.TypeString() == "error" && !allNil {
+			values[i] = fmt.Sprintf("errors.New(%sErrorMessage)", m.Obj.InterfaceName)
+		} else {
+			switch p.TypeString() {
+			case "bool":
+				values[i] = "false"
+			case "int":
+				values[i] = "0"
+			case "int32":
+				values[i] = "int32(0)"
+			case "in64":
+				values[i] = "int64(0)"
+			case "float32":
+				values[i] = "float32(0.0)"
+			case "float64":
+				values[i] = "0.0"
+			case "string":
+				values[i] = "\"\""
+			case "time.Time":
+				values[i] = "time.Now()"
+			default:
+				values[i] = "nil"
+			}
+		}
+	}
+	return strings.Join(values, ", ")
 }
 
 type param struct {

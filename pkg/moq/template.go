@@ -24,7 +24,8 @@ type Mock{{.InterfaceName}} struct {
 func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}({{.Arglist}}) {{.ReturnArglist}} {
 	return mock.Mock{{.Name}}({{ .ArgCallList }})
 }
-{{ end -}}
+
+{{- end}}
 
 func NewMock{{.InterfaceName}}(opts {{.InterfaceName}}Opts) *Mock{{.InterfaceName}} {
 	mock := new(Mock{{.InterfaceName}})
@@ -32,9 +33,9 @@ func NewMock{{.InterfaceName}}(opts {{.InterfaceName}}Opts) *Mock{{.InterfaceNam
 	{{- range .Methods }}
 		mock.Mock{{.Name}} = func({{ .Arglist }}) {{.ReturnArglist}} {
 			if opts.Is{{.Name}}Error {
-				return
+				return {{.ReturnValuelist false}}
 			}
-			return
+			return {{.ReturnValuelist true}}
 		}
 	{{- end }}
 
