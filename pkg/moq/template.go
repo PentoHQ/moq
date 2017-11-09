@@ -27,18 +27,20 @@ func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}({{.Arglist}}) {{.ReturnArglist
 
 {{- end}}
 
+func (mock *Mock{{$obj.InterfaceName}}) SetOpts (opts {{.InterfaceName}}Opts) {
+	{{- range .Methods }}
+	mock.Mock{{.Name}} = func({{ .Arglist }}) {{.ReturnArglist}} {
+		if opts.Is{{.Name}}Error {
+			return {{.ReturnValuelist false}}
+		}
+		return {{.ReturnValuelist true}}
+	}
+	{{- end }}
+}
+
 func NewMock{{.InterfaceName}}(opts {{.InterfaceName}}Opts) *Mock{{.InterfaceName}} {
 	mock := new(Mock{{.InterfaceName}})
-
-	{{- range .Methods }}
-		mock.Mock{{.Name}} = func({{ .Arglist }}) {{.ReturnArglist}} {
-			if opts.Is{{.Name}}Error {
-				return {{.ReturnValuelist false}}
-			}
-			return {{.ReturnValuelist true}}
-		}
-	{{- end }}
-
+	mock.SetOpts(opts)
 	return mock
 }
 {{ end -}}`
