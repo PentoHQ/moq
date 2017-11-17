@@ -172,6 +172,14 @@ type method struct {
 	Returns []*param
 }
 
+func (m *method) SmallName() string {
+	a := []byte(m.Name)
+	for i, l := range a {
+		a[i] = l | ('a' - 'A')
+	}
+	return string(a)
+}
+
 func (m *method) Arglist() string {
 	params := make([]string, len(m.Params))
 	for i, p := range m.Params {

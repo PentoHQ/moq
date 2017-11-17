@@ -18,13 +18,19 @@ type {{.InterfaceName}}Opts struct {
 type Mock{{.InterfaceName}} struct {
 {{- range .Methods }}
 	Mock{{.Name}} func({{ .Arglist }}) {{.ReturnArglist}}
+	{{.SmallName}}Calls int
 {{- end }}
 }
 {{ range .Methods }}
+
 func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}({{.Arglist}}) {{.ReturnArglist}} {
+	mock.{{.SmallName}}Calls++
 	return mock.Mock{{.Name}}({{ .ArgCallList }})
 }
 
+func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}Calls() int {
+	return mock.{{.SmallName}}Calls
+}
 {{- end}}
 
 func (mock *Mock{{$obj.InterfaceName}}) SetOpts (opts {{.InterfaceName}}Opts) {
