@@ -24,8 +24,8 @@ type Mock{{.InterfaceName}} struct {
 {{ range .Methods }}
 
 func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}({{.Arglist}}) {{.ReturnArglist}} {
-	mock.{{.SmallName}}Calls++
-	return mock.Mock{{.Name}}({{ .ArgCallList }})
+	mock.{{.SmallName}}Calls++{{if .HasReturnArgs}}
+	return mock.Mock{{.Name}}({{ .ArgCallList }}){{end}}
 }
 
 func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}Calls() int {
