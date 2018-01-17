@@ -207,6 +207,10 @@ func (m *method) ReturnArglist() string {
 	return strings.Join(params, ", ")
 }
 
+func (m *method) HasReturnArgs() bool {
+	return len(m.Returns) > 0
+}
+
 func (m *method) ReturnValuelist(allNil bool) string {
 	values := make([]string, len(m.Returns))
 	for i, p := range m.Returns {
