@@ -12,6 +12,7 @@ const {{.InterfaceName}}ErrorMessage = "{{.InterfaceName}}-error"
 type {{.InterfaceName}}Opts struct {
 	{{- range .Methods }}
 	Is{{.Name}}Error bool
+	{{if .HasReturnArgRatherThanError}}{{.Name}}Response {{.ReturnFirstArgument}}{{- end}}
 {{- end }}
 }
 
@@ -37,9 +38,12 @@ func (mock *Mock{{$obj.InterfaceName}}) SetOpts (opts {{.InterfaceName}}Opts) {
 	{{- range .Methods }}
 	mock.Mock{{.Name}} = func({{ .Arglist }}) {{.ReturnArglist}} {
 		if opts.Is{{.Name}}Error {
-			return {{.ReturnValuelist false}}
+			return {{.ReturnValuelist false nil nil }}
 		}
-		return {{.ReturnValuelist true}}
+		if opts.{{.Name}}Response != nil {
+			return {{.ReturnValuelist true 0 opts.{{.Name}}Response}}
+		}
+		return {{.ReturnValuelist true nil nil}}
 	}
 	{{- end }}
 }

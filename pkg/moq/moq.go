@@ -207,16 +207,40 @@ func (m *method) ReturnArglist() string {
 	return strings.Join(params, ", ")
 }
 
+func (m *method) ReturnFirstArgument() string {
+	params := make([]string, len(m.Returns))
+	for i, p := range m.Returns {
+		params[i] = p.TypeString()
+	}
+	return params[0]
+}
+
+func (m *method) HasReturnArgRatherThanError() bool {
+	params := make([]string, len(m.Returns))
+	for i, p := range m.Returns {
+		params[i] = p.TypeString()
+	}
+	if params[0] == "error" {
+		return false
+	}
+	return true
+}
+
 func (m *method) HasReturnArgs() bool {
 	return len(m.Returns) > 0
 }
 
-func (m *method) ReturnValuelist(allNil bool) string {
+func (m *method) ReturnValuelist(allNil bool, customArgumentPosition *int, customResponse string) string {
 	values := make([]string, len(m.Returns))
 	for i, p := range m.Returns {
 		if p.TypeString() == "error" && !allNil {
 			values[i] = fmt.Sprintf("errors.New(%sErrorMessage)", m.Obj.InterfaceName)
 		} else {
+			if customArgumentPosition != nil {
+				if i == *customArgumentPosition {
+					values[i] = customResponse
+				}
+			}
 			switch p.TypeString() {
 			case "bool":
 				values[i] = "false"
