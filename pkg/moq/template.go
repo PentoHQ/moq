@@ -23,6 +23,11 @@ type Mock{{.InterfaceName}} struct {
 }
 {{ range .Methods }}
 
+func (mock *Mock{{$obj.InterfaceName}}) SetMock{{.Name}}(mockFunc func({{ .Arglist }}) {{.ReturnArglist}}) (*Mock{{$obj.InterfaceName}}) {
+	mock.Mock{{.Name}} = mockFunc
+	return mock
+}
+
 func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}({{.Arglist}}) {{.ReturnArglist}} {
 	mock.{{.SmallName}}Calls++
 	return mock.Mock{{.Name}}({{ .ArgCallList }})
