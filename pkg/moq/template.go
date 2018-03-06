@@ -19,6 +19,7 @@ type Mock{{.InterfaceName}} struct {
 {{- range .Methods }}
 	Mock{{.Name}} func({{ .Arglist }}) {{.ReturnArglist}}
 	{{.SmallName}}Calls int
+	{{.SmallName}}Chan chan int
 {{- end }}
 }
 {{ range .Methods }}
@@ -30,11 +31,19 @@ func (mock *Mock{{$obj.InterfaceName}}) SetMock{{.Name}}(mockFunc func({{ .Argli
 
 func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}({{.Arglist}}) {{.ReturnArglist}} {
 	mock.{{.SmallName}}Calls++{{if .HasReturnArgs}}
+	select {
+    case mock.{{.SmallName}}Chan <- 1:
+    default:
+    }
 	return mock.Mock{{.Name}}({{ .ArgCallList }}){{end}}
 }
 
 func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}Calls() int {
 	return mock.{{.SmallName}}Calls
+}
+
+func (mock *Mock{{$obj.InterfaceName}}) {{.Name}}Chan() chan int {
+	return mock.{{.SmallName}}Chan
 }
 {{- end}}
 
@@ -46,6 +55,7 @@ func (mock *Mock{{$obj.InterfaceName}}) SetOpts (opts {{.InterfaceName}}Opts) {
 		}
 		return {{.ReturnValuelist true}}
 	}
+	mock.{{.SmallName}}Chan = make(chan int)
 	{{- end }}
 }
 
