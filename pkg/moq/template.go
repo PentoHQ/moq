@@ -1,7 +1,7 @@
 package moq
 
 // moqImports are the imports all moq files get.
-var moqImports = []string{"sync"}
+var moqImports = []string{}
 
 // moqTemplate is the template for mocked code.
 var moqTemplate = `package {{.PackageName}}

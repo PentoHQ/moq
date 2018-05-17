@@ -2,7 +2,9 @@ package moq
 
 import (
 	"bytes"
+	"io"
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
 )
@@ -31,6 +33,7 @@ func TestMoq(t *testing.T) {
 		"lockPersonStoreMockGet.Lock()",
 		"mock.calls.Get = append(mock.calls.Get, callInfo)",
 		"lockPersonStoreMockGet.Unlock()",
+		"// ID is the id argument value",
 	}
 	for _, str := range strs {
 		if !strings.Contains(s, str) {
@@ -196,10 +199,20 @@ func TestVendoredPackages(t *testing.T) {
 
 // TestDotImports tests for https://github.com/matryer/moq/issues/21.
 func TestDotImports(t *testing.T) {
-	err := os.Chdir("testpackages/dotimport")
+	preDir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Getwd: %s", err)
+	}
+	err = os.Chdir("testpackages/dotimport")
 	if err != nil {
 		t.Errorf("Chdir: %s", err)
 	}
+	defer func() {
+		err := os.Chdir(preDir)
+		if err != nil {
+			t.Errorf("Chdir back: %s", err)
+		}
+	}()
 	m, err := New(".", "moqtest_test")
 	if err != nil {
 		t.Fatalf("moq.New: %s", err)
@@ -210,7 +223,51 @@ func TestDotImports(t *testing.T) {
 		t.Errorf("mock error: %s", err)
 	}
 	s := buf.String()
-	if !strings.Contains(s, `"github.com/matryer/moq/pkg/moq/testpackages/dotimport"`) {
+	if !strings.Contains(s, `/moq/pkg/moq/testpackages/dotimport"`) {
 		t.Error("contains invalid dot import")
+	}
+}
+
+func TestEmptyInterface(t *testing.T) {
+	m, err := New("testpackages/emptyinterface", "")
+	if err != nil {
+		t.Fatalf("moq.New: %s", err)
+	}
+	var buf bytes.Buffer
+	err = m.Mock(&buf, "Empty")
+	if err != nil {
+		t.Errorf("mock error: %s", err)
+	}
+	s := buf.String()
+	if strings.Contains(s, `"sync"`) {
+		t.Error("contains sync import, although this package isn't used")
+	}
+}
+
+func TestGoGenerateVendoredPackages(t *testing.T) {
+	cmd := exec.Command("go", "generate", "./...")
+	cmd.Dir = "testpackages/gogenvendoring"
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		t.Errorf("StdoutPipe: %s", err)
+	}
+	defer stdout.Close()
+	err = cmd.Start()
+	if err != nil {
+		t.Errorf("Start: %s", err)
+	}
+	buf := bytes.NewBuffer(nil)
+	io.Copy(buf, stdout)
+	err = cmd.Wait()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			t.Errorf("Wait: %s %s", exitErr, string(exitErr.Stderr))
+		} else {
+			t.Errorf("Wait: %s", err)
+		}
+	}
+	s := buf.String()
+	if strings.Contains(s, `vendor/`) {
+		t.Error("contains vendor directory in import path")
 	}
 }
