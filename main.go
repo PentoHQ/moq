@@ -2,12 +2,12 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
-	"errors"
 
 	"github.com/PentoHQ/moq/pkg/moq"
 )
